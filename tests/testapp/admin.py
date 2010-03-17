@@ -11,10 +11,7 @@ class TitleOptions(admin.ModelAdmin):
 class ClipOptions(admin.ModelAdmin):
     pass
 
-class PostOptions(admin.ModelAdmin):
-    list_display = ("content", "posted", "importance", )
 
 admin.site.register(Person, PersonOptions)
 admin.site.register(Title, TitleOptions)
 admin.site.register(Clip, ClipOptions)
-admin.site.register(Post, PostOptions)
