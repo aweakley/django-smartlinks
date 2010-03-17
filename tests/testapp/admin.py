@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from myapp.models import *
+from models import *
 
 class PersonOptions(admin.ModelAdmin):
     pass
