@@ -22,9 +22,9 @@ class SmartLinksTest(unittest.TestCase):
         settings.SMARTLINKS = (
             (('t', 'title',), "testapp.Title", {}),
             (('p', 'person',), "testapp.Person", {}),
-            (('c', 'clip',), "testapp.Clip", {"allowed_embeds": {"keyframe": "get_keyframe", "video": "get_video"}}),
+            (('z', 'clip',), "testapp.Clip", {"allowed_embeds": {"keyframe": "get_keyframe", "video": "get_video"}}),
         )
-        
+        # using 'c', 'clip' above causes a conflict with the hardcoded connection to collection-item in smartlinks.py
         template = Template("{% load smartlinks %}{{ dat|smartlinks }}")
         template_arg = Template("{% load smartlinks %}{{ dat|smartlinks:arg }}")
 
@@ -147,37 +147,37 @@ class SmartLinksTest(unittest.TestCase):
         self.ae(smartlink('[cLiP[Clip 2 of Mad Max]]'), '<a href="/title/mad-max-1979/clip/2/">Clip 2 of Mad Max</a>')
 
         #can spell numbers
-        self.ae(smartlink('[c[Clip one from Mad Max]]'), '<a href="/title/mad-max-1979/clip/1/">Clip one from Mad Max</a>')
+        self.ae(smartlink('[z[Clip one from Mad Max]]'), '<a href="/title/mad-max-1979/clip/1/">Clip one from Mad Max</a>')
         #really? (don't worry, it's irrelevant for the generic smartlinks API)
-        self.ae(smartlink('[c[Clip four hundred and thirty seven from Mad Max]]'), '<a href="/title/mad-max-1979/clip/437/">Clip four hundred and thirty seven from Mad Max</a>')
-        self.ae(smartlink('[c[Clip four hundred thirty-seven from Mad Max]]'), '<a href="/title/mad-max-1979/clip/437/">Clip four hundred thirty-seven from Mad Max</a>')
+        self.ae(smartlink('[z[Clip four hundred and thirty seven from Mad Max]]'), '<a href="/title/mad-max-1979/clip/437/">Clip four hundred and thirty seven from Mad Max</a>')
+        self.ae(smartlink('[z[Clip four hundred thirty-seven from Mad Max]]'), '<a href="/title/mad-max-1979/clip/437/">Clip four hundred thirty-seven from Mad Max</a>')
 
     def testFailing(self):
         #these should fail silently
-        self.ae(smartlink('[c[Clip 9 from Mad Max]]'), '<cite class="unresolved">Clip 9 from Mad Max</cite>')
-        self.ae(smartlink('[c[Clip one dozen of Mad Max]]'), '<cite class="unresolved">Clip one dozen of Mad Max</cite>')
-        self.ae(smartlink('[c[Clip 2 dozen and 8 from Mad Max]]'), '<cite class="unresolved">Clip 2 dozen and 8 from Mad Max</cite>')
-        self.ae(smartlink('[c[Clip round the ear from Mad Max]]'), '<cite class="unresolved">Clip round the ear from Mad Max</cite>')
+        self.ae(smartlink('[z[Clip 9 from Mad Max]]'), '<cite class="unresolved">Clip 9 from Mad Max</cite>')
+        self.ae(smartlink('[z[Clip one dozen of Mad Max]]'), '<cite class="unresolved">Clip one dozen of Mad Max</cite>')
+        self.ae(smartlink('[z[Clip 2 dozen and 8 from Mad Max]]'), '<cite class="unresolved">Clip 2 dozen and 8 from Mad Max</cite>')
+        self.ae(smartlink('[z[Clip round the ear from Mad Max]]'), '<cite class="unresolved">Clip round the ear from Mad Max</cite>')
 
         # invalid titles fail silently
-        self.ae(smartlink('[c[Clip 1 from Foo]]'), '<cite class="unresolved">Clip 1 from Foo</cite>')
+        self.ae(smartlink('[z[Clip 1 from Foo]]'), '<cite class="unresolved">Clip 1 from Foo</cite>')
 
         # ambiguous titles fail silently
-        self.ae(smartlink('[c[Clip 1 from On Our Selection]]'), '<cite class="ambiguous">Clip 1 from On Our Selection</cite>')
+        self.ae(smartlink('[z[Clip 1 from On Our Selection]]'), '<cite class="ambiguous">Clip 1 from On Our Selection</cite>')
         # unambiguous titles do not fail
-        self.ae(smartlink('[c[Clip 1 from On Our Selection (1930)]]'), '<a href="/title/on-our-selection-1930/clip/1/">Clip 1 from On Our Selection (1930)</a>')
-        self.ae(smartlink('[c[Clip 1 from On Our Selection]1930]'), '<a href="/title/on-our-selection-1930/clip/1/">Clip 1 from On Our Selection</a>') #necessary?
+        self.ae(smartlink('[z[Clip 1 from On Our Selection (1930)]]'), '<a href="/title/on-our-selection-1930/clip/1/">Clip 1 from On Our Selection (1930)</a>')
+        self.ae(smartlink('[z[Clip 1 from On Our Selection]1930]'), '<a href="/title/on-our-selection-1930/clip/1/">Clip 1 from On Our Selection</a>') #necessary?
         # unless the disambiguator is incorrect
-        self.ae(smartlink('[c[Clip 1 from On Our Selection]1929]'), '<cite class="unresolved">Clip 1 from On Our Selection</cite>')
+        self.ae(smartlink('[z[Clip 1 from On Our Selection]1929]'), '<cite class="unresolved">Clip 1 from On Our Selection</cite>')
 
         # 'from/of' in movie titles are OK.
-        self.ae(smartlink('[c[Clip 1 from Far from home]]'), '<a href="/title/far-from-home-1999/clip/1/">Clip 1 from Far from home</a>')
+        self.ae(smartlink('[z[Clip 1 from Far from home]]'), '<a href="/title/far-from-home-1999/clip/1/">Clip 1 from Far from home</a>')
 
     def testContext(self):
         #Links can vary with context (how to implement?)
-        self.ae(smartlink('[c[clip one]]', obj=Title.objects.get_from_smartlink("mad max")), '<a href="/title/mad-max-1979/clip/1/">clip one</a>') #in /title/mad-max/
-        self.ae(smartlink('[c[clip one]]', obj=Title.objects.get_from_smartlink("far from home")), '<a href="/title/far-from-home-1999/clip/1/">clip one</a>') #in /title/far-from-home/
-        self.ae(smartlink('[c[clip one]]', obj=Person.objects.get_from_smartlink("george miller", disambiguator=1)), '<cite class="unresolved">clip one</cite>') #in /person/george-miller-1/
+        self.ae(smartlink('[z[clip one]]', obj=Title.objects.get_from_smartlink("mad max")), '<a href="/title/mad-max-1979/clip/1/">clip one</a>') #in /title/mad-max/
+        self.ae(smartlink('[z[clip one]]', obj=Title.objects.get_from_smartlink("far from home")), '<a href="/title/far-from-home-1999/clip/1/">clip one</a>') #in /title/far-from-home/
+        self.ae(smartlink('[z[clip one]]', obj=Person.objects.get_from_smartlink("george miller", disambiguator=1)), '<cite class="unresolved">clip one</cite>') #in /person/george-miller-1/
 
 
         
@@ -217,7 +217,7 @@ class SmartLinksTest(unittest.TestCase):
         self.ae(smartlink('[t[Mad  Max (1979)]]'), '<cite class="unresolved">Mad  Max (1979)</cite>')
         
         #this doesn't resolve, but would if '19 30' was a disambiguator.
-        self.ae(smartlink('[c[Clip 1 from On Our Selection]19 30 ]'), '<cite class="unresolved">Clip 1 from On Our Selection</cite>')
+        self.ae(smartlink('[z[Clip 1 from On Our Selection]19 30 ]'), '<cite class="unresolved">Clip 1 from On Our Selection</cite>')
 
         #too many interior brackets
         # [[t[dfgdfg]]] - is it a dumblink with a context "[t[dfgdfg]]" or a smartlink surrounded by square brackets?
@@ -231,7 +231,7 @@ class SmartLinksTest(unittest.TestCase):
         self.ae(smartlink('[t[]1920]'), "[t[]1920]")
         
     def testSmartEmbeds(self):
-        self.ae(smartlink('{c.keyframe{on-our-selection-1930}1}'), '<img src="/media/img/img1.jpg" />')
-        self.ae(smartlink('{c.keyframe     {on-our-selection-1930}1}'), '<img src="/media/img/img1.jpg" />')
-        self.ae(smartlink('{c.video{far-from-home-1999}1}'), '<embed type="video">/media/video/video1.flv</embed>')
-        self.ae(smartlink('{c.keyframe{mad-max-1979}100}'), '')
+        self.ae(smartlink('{z.keyframe{on-our-selection-1930}1}'), '<img src="/media/img/img1.jpg" />')
+        self.ae(smartlink('{z.keyframe     {on-our-selection-1930}1}'), '<img src="/media/img/img1.jpg" />')
+        self.ae(smartlink('{z.video{far-from-home-1999}1}'), '<embed type="video">/media/video/video1.flv</embed>')
+        self.ae(smartlink('{z.keyframe{mad-max-1979}100}'), '')
